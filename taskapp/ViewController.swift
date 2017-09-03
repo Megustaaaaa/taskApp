@@ -22,7 +22,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     // DB内のタスクが格納されるリスト。
     // 日付近い順\順でソート：降順
     // 以降内容をアップデートするとリスト内は自動的に更新される。
-    var taskArray = try! Realm().objects(Task.self).sorted(byKeyPath: "date", ascending: false)  // ←追加
+    var taskArray = try! Realm().objects(Task.self).sorted(byKeyPath: "date", ascending: false)
     
     
     override func viewDidLoad() {
@@ -31,6 +31,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         
         tableView.delegate = self
         tableView.dataSource = self
+        
+        search.delegate = self
     }
     
     override func didReceiveMemoryWarning() {
@@ -51,7 +53,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         
         // Cellに値を設定する.
         let task = taskArray[indexPath.row]
-        cell.textLabel?.text = task.title
+        cell.textLabel?.text = task.title + " (" + task.category + ")"
         
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd HH:mm"
@@ -60,14 +62,6 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         cell.detailTextLabel?.text = dateString
         
         return cell
-    }
-    
-    //searchbarのメソッド
-    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        
-        
-        
-        
     }
     
     // MARK: UITableViewDelegateプロトコルのメソッド
@@ -133,6 +127,20 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         tableView.reloadData()
+    }
+  
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        print("\(searchText)")
+        
+        let realm = try! Realm()
+        
+        //検索した結果をtaskArrayに入れる
+        
+        taskArray = realm.objects(Task.self).filter("category BEGINSWITH %@", searchText)
+        
+        //更新したtaskArrayをtableViewに反映させる
+        tableView.reloadData()
+
     }
     
 }
